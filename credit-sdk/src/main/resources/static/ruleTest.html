@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>规则集测试界面</title>
+
+<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+	integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+	crossorigin="anonymous">
+
+<!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css"
+	integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+	crossorigin="anonymous">
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"
+	integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+	crossorigin="anonymous"></script>
+
+<style type="text/css">
+.content {
+	width: 1000px;
+	margin: 150px auto;
+}
+</style>
+
+</head>
+
+
+<body>
+	<div class="content">
+		<div class="row" style="margin-bottom: 40px;">
+			<div class="col-lg-5">
+				<div class="input-group">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button">规则名称</button>
+					</span> <input type="text" id="ruleName" class="form-control"
+						placeholder="Search for...">
+				</div>
+				<!-- /input-group -->
+			</div>
+			<!-- /.col-lg-6 -->
+			<div class="col-lg-5">
+				<div class="input-group">
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button">规则值</button>
+					</span> <input type="text" id="ruleValue" class="form-control"
+						placeholder="Search for...">
+				</div>
+				<!-- /input-group -->
+			</div>
+			<div class="col-lg-2">
+				<div class="btn-group center" role="group" aria-label="...">
+					<button type="button" class="btn btn-default" onclick="post()">提交</button>
+				</div>
+			</div>
+
+		</div>
+
+		<!-- /.row -->
+		<pre id="result" style="height: 500px">
+			
+		
+		</pre>
+	</div>
+
+</body>
+<script type="text/javascript"
+	src="http://tools.jb51.net/static/jsformat/jsbeautify.js"></script>
+<script type="text/javascript">
+	function post() {
+
+	   var ruleName=$("#ruleName").val();
+	　　var ruleValue=$("#ruleValue").val();
+
+	　　var urlData={'ruleName':ruleName,'ruleValue':ruleValue}
+	　　$.post('/9004',urlData,function(resultJSONObject){
+	　　　　$("#result").text(JSON.stringify(resultJSONObject, null, 4));
+	　　},"json");
+	}
+</script>
+</html>
