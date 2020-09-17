@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.huarong.credit.sdk.vo.ResultVO;
 import com.huarong.credit.sdk.vo.query.rule.R9002;
-import com.huarong.credit.sdk.vo.query.rule.R9004;
+import com.huarong.credit.sdk.vo.query.v1.CreditScoreQueryVO;
+import com.huarong.credit.sdk.vo.query.v1.RiskRptQueryVO;
+import com.huarong.credit.sdk.vo.query.v1.RuleQueryVO;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.codec.Base64;
@@ -38,6 +40,7 @@ import cn.hutool.crypto.asymmetric.SignAlgorithm;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import cn.hutool.setting.dialect.Props;
 
 /**
  * ClassName:Test9001Controller <br/>
@@ -52,11 +55,22 @@ import cn.hutool.json.JSONUtil;
 @Controller
 public class TestNotifyController {
 
-	private static String privateKeyBase64 = FileUtil.readString("classpath:certs/privateKey.txt", CharsetUtil.UTF_8);
-	private static String publicKeyBase64 = FileUtil.readString("classpath:certs/publicKey.txt", CharsetUtil.UTF_8);
+	private static String privateKeyBase64 = "";// rsa私钥
+	private static String publicKeyBase64 = "";// rsa公钥
+	private static String desKey = "";// des盐key
+	private static String post_url_base = "";// 征信查询请求地址
+	private static String merchantId = "";// 机构编号
 
-	// 敏感信息加密盐
-	private static String desKey = "12345678";
+	static {
+		Props props = new Props("config.properties");
+		privateKeyBase64 = FileUtil.readString(
+				props.getProperty("config.rsa.privatekey", "classpath:certs/privateKey.txt"), CharsetUtil.UTF_8);
+		publicKeyBase64 = FileUtil.readString(
+				props.getProperty("config.rsa.publickey", "classpath:certs/publicKey.txt"), CharsetUtil.UTF_8);
+		desKey = props.getProperty("config.deskey", "12345678");
+		post_url_base = props.getProperty("config.url.credit.querybase", "http://127.0.0.1:83/api/v1.0/");
+		merchantId = props.getProperty("config.merchantId", "10000001");
+	}
 
 	@RequestMapping("/notify")
 	@ResponseBody
@@ -73,7 +87,7 @@ public class TestNotifyController {
 		String signature = jsonObject.getStr("signature");
 
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 			if (verify) {
@@ -137,7 +151,7 @@ public class TestNotifyController {
 		return new String(buffer, charEncoding);
 	}
 
-	@RequestMapping("/9002")
+	@RequestMapping("/test")
 	@ResponseBody
 	public String test(String ruleName, String ruleValue) {
 
@@ -164,7 +178,7 @@ public class TestNotifyController {
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -187,7 +201,7 @@ public class TestNotifyController {
 		String signature = jsonObject.getStr("signature");
 
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}
@@ -197,39 +211,28 @@ public class TestNotifyController {
 		return jsonObject.toStringPretty();
 	}
 
-	@RequestMapping("/9004")
+	@RequestMapping("/R9002")
 	@ResponseBody
-	public String _R9004(String ruleName, String ruleValue) {
+	public String _R9002(String serialNumber, String jsonParams) throws IOException {
 
-		R9004 r9004 = new R9004();
+		CreditScoreQueryVO creditScoreQueryVO = new CreditScoreQueryVO();
 
-		r9004.setRequestNo(String.valueOf(System.currentTimeMillis()));
-		r9004.setMerchantId("10000001");
-		r9004.setRiskQueryType("R9002");
-		r9004.setQueryName(SecureUtil.des(desKey.getBytes()).encryptBase64("张三"));
-		r9004.setQueryIdNoType("01");
-		r9004.setQueryIdNo(SecureUtil.des(desKey.getBytes()).encryptBase64("11010119900307715X"));
-		r9004.setQueryPhone(SecureUtil.des(desKey.getBytes()).encryptBase64("18560580991"));
-		r9004.setQueyCardNo(SecureUtil.des(desKey.getBytes()).encryptBase64("18560580991"));
-		r9004.setAuthTime(DateUtil.now());
-		r9004.setVeriFaceTime(DateUtil.now());
-		r9004.setIdCardFile("43434");
-		r9004.setOtherAuthFile("46465");
-		r9004.setCaFile("685868");
-		r9004.setIdentFile("7777");
-		r9004.setWorkFile("5555");
-		r9004.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
-		r9004.setOtherFile("2222");
-		r9004.setRules(ruleName + "=" + ruleValue);
-		r9004.setIncomeFile("3333");
-		r9004.setBackUrl("3233");
-		r9004.setAssetsFile("6666");
+		creditScoreQueryVO.setRequestNo(String.valueOf(System.currentTimeMillis()));
+		creditScoreQueryVO.setMerchantId(merchantId);
+		creditScoreQueryVO.setRiskQueryType("R9003");
+		creditScoreQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
 
-		Map<String, Object> map = BeanUtil.beanToMap(r9004);
+		creditScoreQueryVO.setSerialNumber("1598939170793");
+		if (StrUtil.isNotEmpty(serialNumber)) {
+			creditScoreQueryVO.setSerialNumber(serialNumber);
+		}
+		creditScoreQueryVO.setJsonParams(jsonParams);
+
+		Map<String, Object> map = BeanUtil.beanToMap(creditScoreQueryVO);
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -239,9 +242,10 @@ public class TestNotifyController {
 		String signBase64 = Base64.encode(signByte);
 		System.out.println(signBase64);
 
-		r9004.setSignature(signBase64);
+		creditScoreQueryVO.setSignature(signBase64);
 
-		String result = HttpUtil.post("http://127.0.0.1:83/api/v1.0/R9004", BeanUtil.beanToMap(r9004), 60000);
+		String result = HttpUtil.post(String.format("%s/R9002", post_url_base), BeanUtil.beanToMap(creditScoreQueryVO),
+				60000);
 
 		JSONObject jsonObject = JSONUtil.parseObj(result);
 		Map<String, Object> resultMap = new HashMap<>();
@@ -251,14 +255,119 @@ public class TestNotifyController {
 		String signature = jsonObject.getStr("signature");
 
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}
-		System.out.println(result);
+		return JSONUtil.toJsonPrettyStr(result);
+	}
 
-		System.out.println(jsonObject.toStringPretty());
-		return jsonObject.toStringPretty();
+	@RequestMapping("/R9003")
+	@ResponseBody
+	public String _R9003(String ruleName, String ruleValue, String serialNumber) {
+
+		RuleQueryVO quleQueryVO = new RuleQueryVO();
+
+		quleQueryVO.setRequestNo(String.valueOf(System.currentTimeMillis()));
+		quleQueryVO.setMerchantId(merchantId);
+		quleQueryVO.setRiskQueryType("R9003");
+		quleQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
+		quleQueryVO.setRules(ruleName + "=" + ruleValue);
+
+		quleQueryVO.setSerialNumber("1598939170793");
+		if (StrUtil.isNotEmpty(serialNumber)) {
+			quleQueryVO.setSerialNumber(serialNumber);
+		}
+
+		Map<String, Object> map = BeanUtil.beanToMap(quleQueryVO);
+
+		map.remove("signature");
+
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+
+		System.out.println(joinStr);
+
+		Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, privateKeyBase64, publicKeyBase64);
+
+		byte[] signByte = sign.sign(joinStr.getBytes());
+		String signBase64 = Base64.encode(signByte);
+		System.out.println(signBase64);
+
+		quleQueryVO.setSignature(signBase64);
+
+		String result = HttpUtil.post(String.format("%s/R9003", post_url_base), BeanUtil.beanToMap(quleQueryVO), 60000);
+
+		JSONObject jsonObject = JSONUtil.parseObj(result);
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", jsonObject.getStr("code"));
+		resultMap.put("message", jsonObject.getStr("message"));
+		resultMap.put("data", jsonObject.getStr("data"));
+		String signature = jsonObject.getStr("signature");
+
+		if ("0000".equals(jsonObject.getStr("code"))) {
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
+			System.out.println(verify ? "验签通过" : "验签不通过");
+		}
+		return JSONUtil.toJsonPrettyStr(result);
+	}
+
+	@RequestMapping("/R9004")
+	@ResponseBody
+	public String _R9004(String serialNumber) {
+
+		RiskRptQueryVO riskRptQueryVO = new RiskRptQueryVO();
+
+		riskRptQueryVO.setRequestNo(String.valueOf(System.currentTimeMillis()));
+		riskRptQueryVO.setMerchantId(merchantId);
+		riskRptQueryVO.setRiskQueryType("R9004");
+		riskRptQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
+
+		riskRptQueryVO.setSerialNumber("1598939170793");
+		if (StrUtil.isNotEmpty(serialNumber)) {
+			riskRptQueryVO.setSerialNumber(serialNumber);
+		}
+
+		Map<String, Object> map = BeanUtil.beanToMap(riskRptQueryVO);
+
+		map.remove("signature");
+
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+
+		System.out.println(joinStr);
+
+		Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, privateKeyBase64, publicKeyBase64);
+
+		byte[] signByte = sign.sign(joinStr.getBytes());
+		String signBase64 = Base64.encode(signByte);
+		System.out.println(signBase64);
+
+		riskRptQueryVO.setSignature(signBase64);
+
+		String result = HttpUtil.post(String.format("%s/R9004", post_url_base), BeanUtil.beanToMap(riskRptQueryVO),
+				60000);
+
+		JSONObject jsonObject = JSONUtil.parseObj(result);
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", jsonObject.getStr("code"));
+		resultMap.put("message", jsonObject.getStr("message"));
+		resultMap.put("data", jsonObject.getStr("data"));
+		String signature = jsonObject.getStr("signature");
+
+		if ("0000".equals(jsonObject.getStr("code"))) {
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
+			System.out.println(verify ? "验签通过" : "验签不通过");
+			if (verify) {
+				JSONObject data = jsonObject.getJSONObject("data");
+				String htmlRpt = SecureUtil.rsa(privateKeyBase64, publicKeyBase64).decryptStr(data.getStr("htmlRpt"),
+						KeyType.PrivateKey);
+				// FileUtil.writeBytes(htmlRpt.getBytes(), "H://test//test.html");
+				data.put("htmlRpt", htmlRpt);
+				resultMap.put("data", data);
+			}
+		}
+		return JSONUtil.toJsonPrettyStr(resultMap);
 	}
 
 }

@@ -13,10 +13,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.huarong.credit.sdk.utils.RequestUtil;
 import com.huarong.credit.sdk.vo.query.credit.C9002;
 import com.huarong.credit.sdk.vo.query.credit.C9004;
 import com.huarong.credit.sdk.vo.query.risk.C9003;
 import com.huarong.credit.sdk.vo.query.rule.R9002;
+import com.huarong.credit.sdk.vo.query.v1.RiskRptQueryVO;
 import com.huarong.credit.sdk.vo.query.v1.RuleQueryVO;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -27,6 +29,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.Sign;
 import cn.hutool.crypto.asymmetric.SignAlgorithm;
 import cn.hutool.http.HttpUtil;
@@ -64,8 +67,8 @@ public class CreditQueryTest {
 	}
 
 	public static void main(String[] args) {
-		R9002();
-		// R9002_4();
+		//C9002();
+		R9004();
 	}
 
 	/**
@@ -75,7 +78,7 @@ public class CreditQueryTest {
 
 		R9002 r9002 = new R9002();
 
-		r9002.setRequestNo(String.valueOf(System.currentTimeMillis()));
+		r9002.setRequestNo(RequestUtil.getRequestNo());
 		r9002.setMerchantId(merchantId);
 		r9002.setRiskQueryType("R9002");
 		r9002.setQueryName(SecureUtil.des(desKey.getBytes()).encryptBase64("张三"));
@@ -91,14 +94,14 @@ public class CreditQueryTest {
 		r9002.setAssetsFile("6666");
 		r9002.setIdentFile("7777");
 		r9002.setBackUrl("http://172.16.3.216:8383/notify");
-		
+
 		r9002.setRules("R0001=L");
 
 		Map<String, Object> map = BeanUtil.beanToMap(r9002);
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -110,7 +113,7 @@ public class CreditQueryTest {
 
 		r9002.setSignature(signBase64);
 
-		String result = HttpUtil.post("http://125.88.27.130:1001/api/v1.0/R9002", BeanUtil.beanToMap(r9002), 60000);
+		String result = HttpUtil.post("http://127.0.0.1:83/api/v1.0/R9002", BeanUtil.beanToMap(r9002), 60000);
 
 		System.out.println(result);
 
@@ -136,12 +139,13 @@ public class CreditQueryTest {
 
 		C9002 c9002 = new C9002();
 
-		c9002.setRequestNo(String.valueOf(System.currentTimeMillis()));
+		c9002.setRequestNo(RequestUtil.getRequestNo());
 		c9002.setMerchantId(merchantId);
 		c9002.setRiskQueryType("C9002");
-		c9002.setQueryName(SecureUtil.des(desKey.getBytes()).encryptBase64("张三"));
+		c9002.setQueryName(SecureUtil.des(desKey.getBytes()).encryptBase64("李四"));
 		c9002.setQueryIdNoType("01");
 		c9002.setQueryIdNo(SecureUtil.des(desKey.getBytes()).encryptBase64("110101199003076077"));
+		c9002.setQueryPhone(SecureUtil.des(desKey.getBytes()).encryptBase64("13600000000"));
 		c9002.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
 		c9002.setCertFile(Base64.encode(FileUtil.file("D:\\certs\\test\\face_1119121314124595221977.jpg")));
 		c9002.setOtherFile("2222");
@@ -157,7 +161,7 @@ public class CreditQueryTest {
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -181,7 +185,7 @@ public class CreditQueryTest {
 		String signature = jsonObject.getStr("signature");
 
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}
@@ -195,7 +199,7 @@ public class CreditQueryTest {
 
 		C9003 c9003 = new C9003();
 
-		c9003.setRequestNo(String.valueOf(System.currentTimeMillis()));
+		c9003.setRequestNo(RequestUtil.getRequestNo());
 		c9003.setMerchantId(merchantId);
 		c9003.setRiskQueryType("C9003");
 		c9003.setQueryName(SecureUtil.des(desKey.getBytes()).encryptBase64("张三"));
@@ -214,7 +218,7 @@ public class CreditQueryTest {
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -238,7 +242,7 @@ public class CreditQueryTest {
 		String signature = jsonObject.getStr("signature");
 
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}
@@ -252,7 +256,7 @@ public class CreditQueryTest {
 
 		C9004 c9004 = new C9004();
 
-		c9004.setRequestNo(String.valueOf(System.currentTimeMillis()));
+		c9004.setRequestNo(RequestUtil.getRequestNo());
 		c9004.setMerchantId(merchantId);
 		c9004.setRiskQueryType("C9004");
 		c9004.setQueryName(SecureUtil.des(desKey.getBytes()).encryptBase64("邓可"));
@@ -271,14 +275,14 @@ public class CreditQueryTest {
 		c9004.setOtherFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
 		c9004.setIncomeFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
 		c9004.setBackUrl("3233");
-		c9004.setAssetsFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		//c9004.setAssetsFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
 		c9004.setAuthIndexId("32434");
 
 		Map<String, Object> map = BeanUtil.beanToMap(c9004);
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -300,7 +304,7 @@ public class CreditQueryTest {
 		String signature = jsonObject.getStr("signature");
 
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}
@@ -311,23 +315,23 @@ public class CreditQueryTest {
 	/**
 	 * R9002-R9003接口查询
 	 */
-	public static void R9002_4() {
+	public static void R9003() {
 
 		RuleQueryVO quleQueryVO = new RuleQueryVO();
 
-		quleQueryVO.setRequestNo(String.valueOf(System.currentTimeMillis()));
+		quleQueryVO.setRequestNo(RequestUtil.getRequestNo());
 		quleQueryVO.setMerchantId(merchantId);
 		quleQueryVO.setRiskQueryType("R9003");
 		quleQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
-		quleQueryVO.setRules("R0001=21");
+		// quleQueryVO.setRules("R0001=21");
 
-		quleQueryVO.setSerialNumber("1598497352399");
+		quleQueryVO.setSerialNumber("1598939170793");
 
 		Map<String, Object> map = BeanUtil.beanToMap(quleQueryVO);
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -349,9 +353,67 @@ public class CreditQueryTest {
 		String signature = jsonObject.getStr("signature");
 
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
+		}
+		System.out.println(result);
+
+	}
+
+	/**
+	 * R9002-R9003接口查询
+	 */
+	public static void R9004() {
+
+		RiskRptQueryVO riskRptQueryVO = new RiskRptQueryVO();
+
+		riskRptQueryVO.setRequestNo(RequestUtil.getRequestNo());
+		riskRptQueryVO.setMerchantId(merchantId);
+		riskRptQueryVO.setRiskQueryType("R9004");
+		riskRptQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
+
+		riskRptQueryVO.setSerialNumber("2020090905333200000905");
+		//riskRptQueryVO.setCompany(SecureUtil.des(desKey.getBytes()).encryptBase64("北京银行"));
+		//riskRptQueryVO.setCompanyAddress(SecureUtil.des(desKey.getBytes()).encryptBase64("北京市西城区金融大街35号国际企业大厦A座305室"));
+		//riskRptQueryVO.setHomeAddress(SecureUtil.des(desKey.getBytes()).encryptBase64("北京市朝阳区春晓园北区7号楼C555室"));
+		
+		Map<String, Object> map = BeanUtil.beanToMap(riskRptQueryVO);
+
+		map.remove("signature");
+
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+
+		System.out.println(joinStr);
+
+		Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, privateKeyBase64, publicKeyBase64);
+
+		byte[] signByte = sign.sign(joinStr.getBytes());
+		String signBase64 = Base64.encode(signByte);
+		System.out.println(signBase64);
+
+		riskRptQueryVO.setSignature(signBase64);
+
+		String result = HttpUtil.post(String.format("%s/R9004", post_url_base), BeanUtil.beanToMap(riskRptQueryVO),
+				60000);
+
+		JSONObject jsonObject = JSONUtil.parseObj(result);
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", jsonObject.getStr("code"));
+		resultMap.put("message", jsonObject.getStr("message"));
+		resultMap.put("data", jsonObject.getStr("data"));
+		String signature = jsonObject.getStr("signature");
+
+		if ("0000".equals(jsonObject.getStr("code"))) {
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
+			System.out.println(verify ? "验签通过" : "验签不通过");
+			if (verify) {
+				JSONObject data = jsonObject.getJSONObject("data");
+				String htmlRpt = SecureUtil.rsa(privateKeyBase64, publicKeyBase64).decryptStr(data.getStr("htmlRpt"),
+						KeyType.PrivateKey);
+				FileUtil.writeBytes(htmlRpt.getBytes(), "H://test//test.html");
+			}
 		}
 		System.out.println(result);
 

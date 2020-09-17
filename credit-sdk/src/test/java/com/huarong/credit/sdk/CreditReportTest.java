@@ -12,8 +12,9 @@ package com.huarong.credit.sdk;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.huarong.credit.sdk.utils.RequestUtil;
 import com.huarong.credit.sdk.vo.report.R9060;
-import com.huarong.credit.sdk.vo.report.R9069;
+import com.huarong.credit.sdk.vo.report.R9064;
 import com.huarong.credit.sdk.vo.report.R9070;
 import com.huarong.credit.sdk.vo.report.base.AssureContract;
 import com.huarong.credit.sdk.vo.report.base.AssureUpload;
@@ -65,11 +66,13 @@ public class CreditReportTest {
 	}
 
 	public static void main(String[] args) {
-		//R9060_69();
+		// R9060();
 
-		//R9069();
-		
+		// R9069();
+
 		R9070();
+
+		// R9064()
 	}
 
 	/**
@@ -79,11 +82,11 @@ public class CreditReportTest {
 	 * @Description: TODO(描述这个方法的作用)
 	 * @param:
 	 */
-	public static void R9060_69() {
+	public static void R9060() {
 
 		R9060 r9060 = new R9060();
 
-		String requestNo = "202008228171805000001";
+		String requestNo = RequestUtil.getRequestNo();
 		r9060.setMerchantId(merchantId);
 		r9060.setBusinessType("9060");
 		r9060.setRequestNo(requestNo);
@@ -105,6 +108,18 @@ public class CreditReportTest {
 		assureContract.setAssureBeginDate("2018-12-01");
 		assureContract.setAssureFinishDate("2019-12-01");
 		assureContract.setRates("20");
+
+		assureContract.setAgrPicPath(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		assureContract.setAgrPicPathType(".pdf");
+		assureContract.setIdentPicPath(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		assureContract.setIdentPicPathType(".pdf");
+		assureContract.setContractPicPath(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		assureContract.setContractPicPathType(".pdf");
+		assureContract.setProPicPath(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		assureContract.setProPicPathType(".pdf");
+		assureContract.setAssPicPath(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		assureContract.setAssPicPathType(".pdf");
+
 		r9060.setAssureContract(assureContract);
 
 		RealInBulgaria realInBulgaria = new RealInBulgaria();
@@ -146,7 +161,7 @@ public class CreditReportTest {
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -169,54 +184,53 @@ public class CreditReportTest {
 		String signature = jsonObject.getStr("signature");
 		System.out.println(result);
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}
+
+		System.out.println("请求流水：" + requestNo);
 	}
-	
+
 	/**
-	 * 9060-9069接口解除担保
+	 * 在保责任金额发生变化
 	 * 
-	 * @Title: R9060_69
+	 * @Title: R9064
 	 * @Description: TODO(描述这个方法的作用)
 	 * @param:
 	 */
-	public static void R9069() {
+	public static void R9064() {
 
-		R9069 r9069 = new R9069();
+		R9064 r9064 = new R9064();
 
-		String requestNo = "20200820171805000013";
-		String businessNumber="20200820171805000010";
-		r9069.setMerchantId(merchantId);
-		r9069.setBusinessType("9060");
-		r9069.setRequestNo(requestNo);
+		String requestNo = RequestUtil.getRequestNo();
+		String businessNumber = requestNo;
+		r9064.setMerchantId(merchantId);
+		r9064.setBusinessType("9060");
+		r9064.setRequestNo(requestNo);
 
 		AssureUpload assureUpload = new AssureUpload();
-		assureUpload.setBusinessNumber(businessNumber);
-		assureUpload.setContractNumber(businessNumber);
+		assureUpload.setBusinessNumber(businessNumber);// 根据实际情况填写业务编号
+		assureUpload.setContractNumber(businessNumber);// 根据实际情况填写合同编号
 		assureUpload.setIsAssureType("2");
 		assureUpload.setIsAssureName(SecureUtil.des(desKey.getBytes()).encryptBase64("李四"));
 		assureUpload.setIsAssureCreditType("0");
 		assureUpload.setIsAssureCreditCode(SecureUtil.des(desKey.getBytes()).encryptBase64("220124195907280419"));
 		assureUpload.setBusinessYearMonth("2020-08-20");
-		r9069.setAssureUpload(assureUpload);
-		
+		r9064.setAssureUpload(assureUpload);
 
 		RealInBulgaria realInBulgaria = new RealInBulgaria();
-		realInBulgaria.setAssureContractStatus("2");
+		realInBulgaria.setAssureContractStatus("1");
 		realInBulgaria.setDutyRelieveDate("2020-08-27");
 		realInBulgaria.setBalanceChangeDate("2020-08-27");
-		realInBulgaria.setBalanceInBulgaria("0");
-		r9069.setRealInBulgaria(realInBulgaria);
+		realInBulgaria.setBalanceInBulgaria("1000");
+		r9064.setRealInBulgaria(realInBulgaria);
 
-		
-
-		Map<String, Object> map = BeanUtil.beanToMap(r9069);
+		Map<String, Object> map = BeanUtil.beanToMap(r9064);
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -226,9 +240,9 @@ public class CreditReportTest {
 		String signBase64 = Base64.encode(signByte);
 		System.out.println(signBase64);
 
-		r9069.setSignature(signBase64);
+		r9064.setSignature(signBase64);
 
-		String result = HttpUtil.post(String.format("%s/09", post_url_base), JSONUtil.parseObj(r9069, true).toString(),
+		String result = HttpUtil.post(String.format("%s/09", post_url_base), JSONUtil.parseObj(r9064, true).toString(),
 				60000);
 
 		JSONObject jsonObject = JSONUtil.parseObj(result);
@@ -239,10 +253,11 @@ public class CreditReportTest {
 		String signature = jsonObject.getStr("signature");
 		System.out.println(result);
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}
+		System.out.println("请求流水号：" + requestNo);
 	}
 
 	/**
@@ -260,13 +275,13 @@ public class CreditReportTest {
 		r9070.setMerchantId(merchantId);
 		r9070.setBusinessType("9070");
 		r9070.setRequestNo(requestNo);
-		r9070.setSerialNumber("HR2020082806410200000097");
+		r9070.setSerialNumber("2020091603080300000681");
 
 		Map<String, Object> map = BeanUtil.beanToMap(r9070);
 
 		map.remove("signature");
 
-		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 
 		System.out.println(joinStr);
 
@@ -288,7 +303,7 @@ public class CreditReportTest {
 		String signature = jsonObject.getStr("signature");
 		System.out.println(result);
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}

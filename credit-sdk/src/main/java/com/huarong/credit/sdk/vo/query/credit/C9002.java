@@ -37,6 +37,8 @@ public class C9002 extends BaseC9000VO {
 
 	private String queryIdNo;// 查询证件号码
 	
+	private String queryPhone;// 查询手机号
+	
 	private String authoFile; 
 	
 	private String certFile;

@@ -34,36 +34,100 @@
 
 <body>
 	<div class="content">
-		<div class="row" style="margin-bottom: 40px;">
-			<div class="col-lg-5">
-				<div class="input-group">
-					<span class="input-group-btn">
-						<button class="btn btn-default" type="button">规则名称</button>
-					</span> <input type="text" id="ruleName" class="form-control"
-						placeholder="Search for...">
-				</div>
-				<!-- /input-group -->
-			</div>
-			<!-- /.col-lg-6 -->
-			<div class="col-lg-5">
-				<div class="input-group">
-					<span class="input-group-btn">
-						<button class="btn btn-default" type="button">规则值</button>
-					</span> <input type="text" id="ruleValue" class="form-control"
-						placeholder="Search for...">
-				</div>
-				<!-- /input-group -->
-			</div>
-			<div class="col-lg-2">
-				<div class="btn-group center" role="group" aria-label="...">
-					<button type="button" class="btn btn-default" onclick="post()">提交</button>
+		<div style="margin: 40px; text-align: center;">
+			<div class="form-inline">
+				<div class="form-group">
+					<label for="exampleInputName2">征信请求流水号</label> <input type="text"
+						class="form-control" id="serialNumber" placeholder="请求流水号">
 				</div>
 			</div>
-
 		</div>
 
+		<div>
+			<!-- Nav tabs -->
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" class="active"><a href="#R9002"
+					aria-controls="R9002" role="tab" data-toggle="tab">信用评分</a></li>
+				<li role="presentation"><a href="#R9003" aria-controls="R9003"
+					role="tab" data-toggle="tab">规则集</a></li>
+				<li role="presentation"><a href="#R9004" aria-controls="R9004"
+					role="tab" data-toggle="tab">风控报告</a></li>
+				<li role="presentation"><a href="#settings"
+					aria-controls="settings" role="tab" data-toggle="tab">其它</a></li>
+			</ul>
+
+			<!-- Tab panes -->
+			<div class="tab-content">
+				<div role="tabpanel" class="tab-pane active" id="R9002">
+					<div class="row" style="margin: 40px;">
+						<div class="col-lg-2">
+							<div class="input-group">
+								<span class="input-group-btn">
+									<span class="btn btn-default" type="button">参数JSON值</span>
+								</span>
+							</div>
+							<!-- /input-group -->
+						</div>
+						<div class="col-lg-8">
+							<div class="input-group">
+								<div class="input-group">
+								<textarea rows="10" id="jsonParams" cols="65"></textarea>
+							</div>
+							</div>
+							<!-- /input-group -->
+						</div>
+					</div>
+					<div class="row" style="margin: 40px;">
+						<div class="col-lg-10 center">
+							<div class="input-group">
+								<button type="submit" onclick="post('R9002')"
+									class="btn btn-default">提交</button>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div role="tabpanel" class="tab-pane" id="R9003">
+					<div class="row" style="margin: 40px;">
+						<div class="col-lg-4">
+							<div class="input-group">
+								<span class="input-group-btn">
+									<button class="btn btn-default" value="R0001" type="button">规则名称</button>
+								</span> <input type="text" id="ruleName" class="form-control"
+									placeholder="规则名称">
+							</div>
+							<!-- /input-group -->
+						</div>
+						<!-- /.col-lg-6 -->
+						<div class="col-lg-4">
+							<div class="input-group">
+								<span class="input-group-btn">
+									<button class="btn btn-default" value="1" type="button">规则值</button>
+								</span> <input type="text" id="ruleValue" class="form-control"
+									placeholder="规则值">
+							</div>
+							<!-- /input-group -->
+						</div>
+						<div class="col-lg-4">
+							<div class="input-group">
+								<button type="submit" onclick="post('R9003')"
+									class="btn btn-default">提交</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="tabpanel" class="tab-pane" id="R9004">
+					<div class="row" style="margin: 40px;"></div>
+				</div>
+				<div role="tabpanel" class="tab-pane" id="settings">
+					<div class="row" style="margin: 40px;">暂无</div>
+				</div>
+			</div>
+		</div>
+
+
 		<!-- /.row -->
-		<pre id="result" style="height: 500px">
+		<pre id="result" style="min-height: 500px">
 			
 		
 		</pre>
@@ -73,15 +137,30 @@
 <script type="text/javascript"
 	src="http://tools.jb51.net/static/jsformat/jsbeautify.js"></script>
 <script type="text/javascript">
-	function post() {
+	
+	function post(type) {
 
 	   var ruleName=$("#ruleName").val();
 	　　var ruleValue=$("#ruleValue").val();
-
-	　　var urlData={'ruleName':ruleName,'ruleValue':ruleValue}
-	　　$.post('/9004',urlData,function(resultJSONObject){
-	　　　　$("#result").text(JSON.stringify(resultJSONObject, null, 4));
+	   var serialNumber = $("#serialNumber").val();
+	   var jsonParams = $("#jsonParams").val();
+	　　var urlData={'ruleName':ruleName,'ruleValue':ruleValue,'serialNumber':serialNumber,'jsonParams':jsonParams}
+	　　$.post('/'+type,urlData,function(resultJSONObject){
+		  if(type=="R9004"){
+			  if(resultJSONObject.code=="0000"){
+				  $("#result").html(resultJSONObject.data.htmlRpt)
+			  }else{
+				  $("#result").text(JSON.stringify(resultJSONObject, null, 4));
+			  }
+		  }else{
+			  $("#result").text(JSON.stringify(resultJSONObject, null, 4));
+		  }
 	　　},"json");
 	}
+	
+	$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+	  	post($(e.target).attr("aria-controls")) // newly activated tab
+	})
+	
 </script>
 </html>

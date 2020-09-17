@@ -33,4 +33,9 @@ public class RiskRptQueryVO extends BaseC9000VO implements Serializable {
 	
 	private String serialNumber; 
 	
+	private String homeAddress;//家庭地址
+	
+	private String companyAddress;//公司地址
+	
+	private String company;//公司
 }
