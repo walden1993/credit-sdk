@@ -69,7 +69,7 @@ public class CreditQueryTest {
 
 	public static void main(String[] args) {
 		//C9002();
-		R9005();
+		R9003();
 	}
 
 	/**
@@ -324,7 +324,7 @@ public class CreditQueryTest {
 		quleQueryVO.setMerchantId(merchantId);
 		quleQueryVO.setRiskQueryType("R9003");
 		quleQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
-		// quleQueryVO.setRules("R0001=21");
+		quleQueryVO.setRules(SecureUtil.des(desKey.getBytes()).encryptBase64("R0001=21"));
 
 		quleQueryVO.setSerialNumber("1598939170793");
 
