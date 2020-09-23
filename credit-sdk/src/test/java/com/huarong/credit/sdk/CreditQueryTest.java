@@ -20,6 +20,7 @@ import com.huarong.credit.sdk.vo.query.risk.C9003;
 import com.huarong.credit.sdk.vo.query.rule.R9002;
 import com.huarong.credit.sdk.vo.query.v1.RiskRptQueryVO;
 import com.huarong.credit.sdk.vo.query.v1.RuleQueryVO;
+import com.huarong.credit.sdk.vo.query.v1.SecurityComputingQueryVO;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.codec.Base64;
@@ -68,7 +69,7 @@ public class CreditQueryTest {
 
 	public static void main(String[] args) {
 		//C9002();
-		R9004();
+		R9005();
 	}
 
 	/**
@@ -413,6 +414,61 @@ public class CreditQueryTest {
 				String htmlRpt = SecureUtil.rsa(privateKeyBase64, publicKeyBase64).decryptStr(data.getStr("htmlRpt"),
 						KeyType.PrivateKey);
 				FileUtil.writeBytes(htmlRpt.getBytes(), "H://test//test.html");
+			}
+		}
+		System.out.println(result);
+
+	}
+	
+	/**
+	 * R9002-R9003接口查询
+	 */
+	public static void R9005() {
+
+		SecurityComputingQueryVO securityComputingQueryVO = new SecurityComputingQueryVO();
+
+		securityComputingQueryVO.setRequestNo(RequestUtil.getRequestNo());
+		securityComputingQueryVO.setMerchantId(merchantId);
+		securityComputingQueryVO.setRiskQueryType("R9005");
+		securityComputingQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
+
+		securityComputingQueryVO.setSerialNumber("2020090905333200000905");
+		
+		Map<String, Object> map = BeanUtil.beanToMap(securityComputingQueryVO);
+
+		map.remove("signature");
+
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+
+		System.out.println(joinStr);
+
+		Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, privateKeyBase64, publicKeyBase64);
+
+		byte[] signByte = sign.sign(joinStr.getBytes());
+		String signBase64 = Base64.encode(signByte);
+		System.out.println(signBase64);
+
+		securityComputingQueryVO.setSignature(signBase64);
+
+		String result = HttpUtil.post(String.format("%s/R9005", post_url_base), BeanUtil.beanToMap(securityComputingQueryVO),
+				60000);
+
+		JSONObject jsonObject = JSONUtil.parseObj(result);
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", jsonObject.getStr("code"));
+		resultMap.put("message", jsonObject.getStr("message"));
+		resultMap.put("data", jsonObject.getStr("data"));
+		String signature = jsonObject.getStr("signature");
+
+		if ("0000".equals(jsonObject.getStr("code"))) {
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
+			System.out.println(verify ? "验签通过" : "验签不通过");
+			if (verify) {
+				JSONObject data = jsonObject.getJSONObject("data");
+				String securityComputingXml = SecureUtil.rsa(privateKeyBase64, publicKeyBase64).decryptStr(data.getStr("securityComputingXml"),
+						KeyType.PrivateKey);
+				FileUtil.writeBytes(securityComputingXml.getBytes(), "H://test//test.xml");
 			}
 		}
 		System.out.println(result);
