@@ -13,11 +13,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Test;
+
 import com.huarong.credit.sdk.utils.RequestUtil;
 import com.huarong.credit.sdk.vo.query.credit.C9002;
 import com.huarong.credit.sdk.vo.query.credit.C9004;
 import com.huarong.credit.sdk.vo.query.risk.C9003;
 import com.huarong.credit.sdk.vo.query.rule.R9002;
+import com.huarong.credit.sdk.vo.query.v1.CreditScoreQueryVO;
 import com.huarong.credit.sdk.vo.query.v1.RiskRptQueryVO;
 import com.huarong.credit.sdk.vo.query.v1.RuleQueryVO;
 import com.huarong.credit.sdk.vo.query.v1.SecurityComputingQueryVO;
@@ -67,15 +70,12 @@ public class CreditQueryTest {
 		merchantId = props.getProperty("config.merchantId", "10000001");
 	}
 
-	public static void main(String[] args) {
-		//C9002();
-		R9003();
-	}
-
 	/**
-	 * 纸质授权查询
+	 * (该接口V1.0已废弃，请勿使用,使用V1.1版本)
 	 */
-	public static void R9002() {
+	@Deprecated
+	@Test
+	public void R9002() {
 
 		R9002 r9002 = new R9002();
 
@@ -96,7 +96,8 @@ public class CreditQueryTest {
 		r9002.setIdentFile("7777");
 		r9002.setBackUrl("http://172.16.3.216:8383/notify");
 
-		r9002.setRules("R0001=L");
+		r9002.setRules(
+				"R0001=58|R0002=38|R0003=3|R0004=6|R0005=4|R0006=8|R0007=1|R0008=2|R0009=2|R0010=6|R0011=1|R0012=4|R0013=1|R0014=1|R0015=1|R0016=1|R0017=11|R0018=0|R0019=0|R0020=0|R0021=0");
 
 		Map<String, Object> map = BeanUtil.beanToMap(r9002);
 
@@ -114,7 +115,7 @@ public class CreditQueryTest {
 
 		r9002.setSignature(signBase64);
 
-		String result = HttpUtil.post("http://127.0.0.1:83/api/v1.0/R9002", BeanUtil.beanToMap(r9002), 60000);
+		String result = HttpUtil.post("http://125.88.27.130:1001/api/v1.0/R9002", BeanUtil.beanToMap(r9002), 60000);
 
 		System.out.println(result);
 
@@ -126,7 +127,7 @@ public class CreditQueryTest {
 		String signature = jsonObject.getStr("signature");
 
 		if ("0000".equals(jsonObject.getStr("code"))) {
-			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, false, "");
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 		}
@@ -136,7 +137,8 @@ public class CreditQueryTest {
 	/**
 	 * 纸质授权查询
 	 */
-	public static void C9002() {
+	@Test
+	public void C9002() {
 
 		C9002 c9002 = new C9002();
 
@@ -196,7 +198,8 @@ public class CreditQueryTest {
 	/**
 	 * 银联五要素授权查询
 	 */
-	public static void C9003() {
+	@Test
+	public void C9003() {
 
 		C9003 c9003 = new C9003();
 
@@ -253,7 +256,8 @@ public class CreditQueryTest {
 	/**
 	 * 综合电子认证授权查询
 	 */
-	public static void C9004() {
+	@Test
+	public void C9004() {
 
 		C9004 c9004 = new C9004();
 
@@ -276,7 +280,7 @@ public class CreditQueryTest {
 		c9004.setOtherFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
 		c9004.setIncomeFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
 		c9004.setBackUrl("3233");
-		//c9004.setAssetsFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		// c9004.setAssetsFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
 		c9004.setAuthIndexId("32434");
 
 		Map<String, Object> map = BeanUtil.beanToMap(c9004);
@@ -314,9 +318,69 @@ public class CreditQueryTest {
 	}
 
 	/**
-	 * R9002-R9003接口查询
+	 * R9002信用评分查询接口
 	 */
-	public static void R9003() {
+	@Test
+	public void R9002_V1_1() {
+
+		CreditScoreQueryVO quleQueryVO = new CreditScoreQueryVO();
+
+		quleQueryVO.setRequestNo(RequestUtil.getRequestNo());
+		quleQueryVO.setMerchantId(merchantId);
+		quleQueryVO.setRiskQueryType("R9002");
+		quleQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
+
+		//技术沟通后自定义的参数
+		Map<String, Object> params = new HashMap<>();
+
+		params.put("queryName", "王华融");//姓名
+		params.put("queryIdNo", "140502198811102243");//身份证
+		params.put("queyCardNo", "6202002294573115115");//卡号
+		params.put("queryPhone", "13986671325");//手机号
+
+		quleQueryVO.setParams(SecureUtil.des(desKey.getBytes()).encryptBase64(JSONUtil.toJsonStr(params)));
+
+		quleQueryVO.setSerialNumber("2020101310100800000099");
+
+		Map<String, Object> map = BeanUtil.beanToMap(quleQueryVO);
+
+		map.remove("signature");
+
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+
+		System.out.println(joinStr);
+
+		Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, privateKeyBase64, publicKeyBase64);
+
+		byte[] signByte = sign.sign(joinStr.getBytes());
+		String signBase64 = Base64.encode(signByte);
+		System.out.println(signBase64);
+
+		quleQueryVO.setSignature(signBase64);
+
+		String result = HttpUtil.post(String.format("%s/R9002", post_url_base), BeanUtil.beanToMap(quleQueryVO), 60000);
+
+		JSONObject jsonObject = JSONUtil.parseObj(result);
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", jsonObject.getStr("code"));
+		resultMap.put("message", jsonObject.getStr("message"));
+		resultMap.put("data", jsonObject.getStr("data"));
+		String signature = jsonObject.getStr("signature");
+
+		if ("0000".equals(jsonObject.getStr("code"))) {
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
+			System.out.println(verify ? "验签通过" : "验签不通过");
+		}
+		System.out.println(result);
+
+	}
+
+	/**
+	 * R9003自定义规则集查询
+	 */
+	@Test
+	public void R9003() {
 
 		RuleQueryVO quleQueryVO = new RuleQueryVO();
 
@@ -324,9 +388,10 @@ public class CreditQueryTest {
 		quleQueryVO.setMerchantId(merchantId);
 		quleQueryVO.setRiskQueryType("R9003");
 		quleQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
-		quleQueryVO.setRules(SecureUtil.des(desKey.getBytes()).encryptBase64("R0001=21"));
+		quleQueryVO.setRules(SecureUtil.des(desKey.getBytes()).encryptBase64(
+				"R0001=58|R0002=38|R0003=3|R0004=6|R0005=4|R0006=8|R0007=1|R0008=2|R0009=2|R0010=6|R0011=1|R0012=4|R0013=4|R0014=3|R0015=2|R0016=1|R0017=20|R0018=3|R0019=20000|R0020=10000|R0021=5000"));
 
-		quleQueryVO.setSerialNumber("1598939170793");
+		quleQueryVO.setSerialNumber("2020101310100800000099");
 
 		Map<String, Object> map = BeanUtil.beanToMap(quleQueryVO);
 
@@ -363,9 +428,10 @@ public class CreditQueryTest {
 	}
 
 	/**
-	 * R9002-R9003接口查询
+	 * R9004风控报告查询
 	 */
-	public static void R9004() {
+	@Test
+	public void R9004() {
 
 		RiskRptQueryVO riskRptQueryVO = new RiskRptQueryVO();
 
@@ -375,10 +441,10 @@ public class CreditQueryTest {
 		riskRptQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
 
 		riskRptQueryVO.setSerialNumber("2020090905333200000905");
-		//riskRptQueryVO.setCompany(SecureUtil.des(desKey.getBytes()).encryptBase64("北京银行"));
-		//riskRptQueryVO.setCompanyAddress(SecureUtil.des(desKey.getBytes()).encryptBase64("北京市西城区金融大街35号国际企业大厦A座305室"));
-		//riskRptQueryVO.setHomeAddress(SecureUtil.des(desKey.getBytes()).encryptBase64("北京市朝阳区春晓园北区7号楼C555室"));
-		
+		// riskRptQueryVO.setCompany(SecureUtil.des(desKey.getBytes()).encryptBase64("北京银行"));
+		// riskRptQueryVO.setCompanyAddress(SecureUtil.des(desKey.getBytes()).encryptBase64("北京市西城区金融大街35号国际企业大厦A座305室"));
+		// riskRptQueryVO.setHomeAddress(SecureUtil.des(desKey.getBytes()).encryptBase64("北京市朝阳区春晓园北区7号楼C555室"));
+
 		Map<String, Object> map = BeanUtil.beanToMap(riskRptQueryVO);
 
 		map.remove("signature");
@@ -419,11 +485,14 @@ public class CreditQueryTest {
 		System.out.println(result);
 
 	}
-	
+
 	/**
-	 * R9002-R9003接口查询
+	 * R9005安全计算报文查询
+	 * {@link com.huarong.credit.sdk.controller.SecurityComputingConteller}
+	 * 查看SecurityComputingConteller可以进行模拟交互
 	 */
-	public static void R9005() {
+	@Test
+	public void R9005() {
 
 		SecurityComputingQueryVO securityComputingQueryVO = new SecurityComputingQueryVO();
 
@@ -433,7 +502,8 @@ public class CreditQueryTest {
 		securityComputingQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
 
 		securityComputingQueryVO.setSerialNumber("2020090905333200000905");
-		
+		securityComputingQueryVO.setParams(SecureUtil.des(desKey.getBytes()).encryptBase64("风控计算自定义参数"));
+
 		Map<String, Object> map = BeanUtil.beanToMap(securityComputingQueryVO);
 
 		map.remove("signature");
@@ -450,8 +520,8 @@ public class CreditQueryTest {
 
 		securityComputingQueryVO.setSignature(signBase64);
 
-		String result = HttpUtil.post(String.format("%s/R9005", post_url_base), BeanUtil.beanToMap(securityComputingQueryVO),
-				60000);
+		String result = HttpUtil.post(String.format("%s/R9005", post_url_base),
+				BeanUtil.beanToMap(securityComputingQueryVO), 60000);
 
 		JSONObject jsonObject = JSONUtil.parseObj(result);
 		Map<String, Object> resultMap = new HashMap<>();
@@ -459,19 +529,18 @@ public class CreditQueryTest {
 		resultMap.put("message", jsonObject.getStr("message"));
 		resultMap.put("data", jsonObject.getStr("data"));
 		String signature = jsonObject.getStr("signature");
-
+		System.out.println(result);
 		if ("0000".equals(jsonObject.getStr("code"))) {
 			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
 			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
 			System.out.println(verify ? "验签通过" : "验签不通过");
 			if (verify) {
 				JSONObject data = jsonObject.getJSONObject("data");
-				String securityComputingXml = SecureUtil.rsa(privateKeyBase64, publicKeyBase64).decryptStr(data.getStr("securityComputingXml"),
-						KeyType.PrivateKey);
-				FileUtil.writeBytes(securityComputingXml.getBytes(), "H://test//test.xml");
+				String securityComputingXml = SecureUtil.rsa(privateKeyBase64, publicKeyBase64)
+						.decryptStr(data.getStr("securityComputingResult"), KeyType.PrivateKey);
+				System.out.println("安全计算处理结果：" + securityComputingXml);
 			}
 		}
-		System.out.println(result);
 
 	}
 }

@@ -34,5 +34,5 @@ public class SecurityComputingQueryVO extends BaseC9000VO implements Serializabl
 	private String serialNumber; 
 	
 
-	private String jsonParams;
+	private String params;
 }

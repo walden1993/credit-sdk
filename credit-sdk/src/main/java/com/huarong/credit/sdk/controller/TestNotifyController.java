@@ -226,7 +226,7 @@ public class TestNotifyController {
 		if (StrUtil.isNotEmpty(serialNumber)) {
 			creditScoreQueryVO.setSerialNumber(serialNumber);
 		}
-		creditScoreQueryVO.setJsonParams(jsonParams);
+		creditScoreQueryVO.setParams(jsonParams);
 
 		Map<String, Object> map = BeanUtil.beanToMap(creditScoreQueryVO);
 

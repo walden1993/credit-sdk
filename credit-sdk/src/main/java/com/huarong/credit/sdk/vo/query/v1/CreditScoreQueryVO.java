@@ -32,5 +32,5 @@ public class CreditScoreQueryVO extends BaseC9000VO implements Serializable {
 	private static final long serialVersionUID = 3690200657405657208L;
 	private String serialNumber; 
 	
-	private String jsonParams;
+	private String params;
 }
