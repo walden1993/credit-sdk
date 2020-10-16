@@ -33,6 +33,7 @@ public class SecurityComputingQueryVO extends BaseC9000VO implements Serializabl
 	
 	private String serialNumber; 
 	
+	private String dataType;//风控系统接收到的报文类型，0:XML，1:JSON;默认是0
 
 	private String params;
 }

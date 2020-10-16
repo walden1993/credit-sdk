@@ -58,6 +58,13 @@ public class SecurityComputingConteller {
 		String params = Base64.decodeStr(object.getStr("params"));//自定义参数
 		System.out.println("自定义参数params:"+params);
 		String fieldRptContent = Base64.decodeStr(object.getStr("fieldRptContent"));//征信报文
+		
+		if(JSONUtil.isJson(fieldRptContent)) {
+			//JSON格式报文内容
+		}else {
+			//XML格式报文
+		}
+		
 		System.out.println("征信报文:"+fieldRptContent);
 		String serialNumber = object.getStr("serialNumber");
 
