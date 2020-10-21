@@ -18,6 +18,7 @@ import org.junit.Test;
 import com.huarong.credit.sdk.utils.RequestUtil;
 import com.huarong.credit.sdk.vo.query.credit.C9002;
 import com.huarong.credit.sdk.vo.query.credit.C9004;
+import com.huarong.credit.sdk.vo.query.credit.C9005;
 import com.huarong.credit.sdk.vo.query.risk.C9003;
 import com.huarong.credit.sdk.vo.query.rule.R9002;
 import com.huarong.credit.sdk.vo.query.v1.CreditScoreQueryVO;
@@ -62,9 +63,9 @@ public class CreditQueryTest {
 	static {
 		Props props = new Props("config.properties");
 		privateKeyBase64 = FileUtil.readString(
-				props.getProperty("config.rsa.privatekey", "classpath:certs/privateKey.txt"), CharsetUtil.UTF_8);
+				props.getProperty("config.rsa.privatekey", "classpatD:certs/privateKey.txt"), CharsetUtil.UTF_8);
 		publicKeyBase64 = FileUtil.readString(
-				props.getProperty("config.rsa.publickey", "classpath:certs/publicKey.txt"), CharsetUtil.UTF_8);
+				props.getProperty("config.rsa.publickey", "classpatD:certs/publicKey.txt"), CharsetUtil.UTF_8);
 		desKey = props.getProperty("config.deskey", "12345678");
 		post_url_base = props.getProperty("config.url.credit.querybase", "http://127.0.0.1:83/api/v1.0/");
 		merchantId = props.getProperty("config.merchantId", "10000001");
@@ -271,16 +272,16 @@ public class CreditQueryTest {
 		c9004.setQueyCardNo(SecureUtil.des(desKey.getBytes()).encryptBase64("6222980021935954"));
 		c9004.setAuthTime(DateUtil.now());
 		c9004.setVeriFaceTime(DateUtil.now());
-		c9004.setIdCardFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
-		c9004.setOtherAuthFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
-		c9004.setCaFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
-		c9004.setIdentFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
-		c9004.setWorkFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		c9004.setIdCardFile(Base64.encode(FileUtil.newFile("D:\\test\\demo-htmlfile.pdf")));
+		c9004.setOtherAuthFile(Base64.encode(FileUtil.newFile("D:\\test\\demo-htmlfile.pdf")));
+		c9004.setCaFile(Base64.encode(FileUtil.newFile("D:\\test\\demo-htmlfile.pdf")));
+		c9004.setIdentFile(Base64.encode(FileUtil.newFile("D:\\test\\demo-htmlfile.pdf")));
+		c9004.setWorkFile(Base64.encode(FileUtil.newFile("D:\\test\\demo-htmlfile.pdf")));
 		c9004.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
-		c9004.setOtherFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
-		c9004.setIncomeFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		c9004.setOtherFile(Base64.encode(FileUtil.newFile("D:\\test\\demo-htmlfile.pdf")));
+		c9004.setIncomeFile(Base64.encode(FileUtil.newFile("D:\\test\\demo-htmlfile.pdf")));
 		c9004.setBackUrl("3233");
-		// c9004.setAssetsFile(Base64.encode(FileUtil.newFile("H:\\test\\demo-htmlfile.pdf")));
+		// c9004.setAssetsFile(Base64.encode(FileUtil.newFile("D:\\test\\demo-htmlfile.pdf")));
 		c9004.setAuthIndexId("32434");
 
 		Map<String, Object> map = BeanUtil.beanToMap(c9004);
@@ -321,6 +322,54 @@ public class CreditQueryTest {
 	 * R9002信用评分查询接口
 	 */
 	@Test
+	public void C9005() {
+
+		C9005 c9005 = new C9005();
+
+		c9005.setRequestNo(RequestUtil.getRequestNo());
+		c9005.setMerchantId(merchantId);
+		c9005.setRiskQueryType("C9005");
+		c9005.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
+		c9005.setSerialNumber("2020090905333200000905");
+
+		Map<String, Object> map = BeanUtil.beanToMap(c9005);
+
+		map.remove("signature");
+
+		String joinStr = MapUtil.sortJoin(map, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+
+		System.out.println(joinStr);
+
+		Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, privateKeyBase64, publicKeyBase64);
+
+		byte[] signByte = sign.sign(joinStr.getBytes());
+		String signBase64 = Base64.encode(signByte);
+		System.out.println(signBase64);
+
+		c9005.setSignature(signBase64);
+
+		String result = HttpUtil.post(String.format("%s/C9005", post_url_base), BeanUtil.beanToMap(c9005), 60000);
+
+		JSONObject jsonObject = JSONUtil.parseObj(result);
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", jsonObject.getStr("code"));
+		resultMap.put("message", jsonObject.getStr("message"));
+		resultMap.put("data", jsonObject.getStr("data"));
+		String signature = jsonObject.getStr("signature");
+
+		if ("0000".equals(jsonObject.getStr("code"))) {
+			String resultStr = MapUtil.sortJoin(resultMap, StrUtil.EMPTY, StrUtil.EMPTY, true, "");
+			boolean verify = sign.verify(resultStr.getBytes(), Base64.decode(signature));
+			System.out.println(verify ? "验签通过" : "验签不通过");
+		}
+		System.out.println(result);
+
+	}
+
+	/**
+	 * R9002信用评分查询接口
+	 */
+	@Test
 	public void R9002_V1_1() {
 
 		CreditScoreQueryVO quleQueryVO = new CreditScoreQueryVO();
@@ -330,13 +379,13 @@ public class CreditQueryTest {
 		quleQueryVO.setRiskQueryType("R9002");
 		quleQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
 
-		//技术沟通后自定义的参数
+		// 技术沟通后自定义的参数
 		Map<String, Object> params = new HashMap<>();
 
-		params.put("queryName", "王华融");//姓名
-		params.put("queryIdNo", "140502198811102243");//身份证
-		params.put("queyCardNo", "6202002294573115115");//卡号
-		params.put("queryPhone", "13986671325");//手机号
+		params.put("queryName", "王华融");// 姓名
+		params.put("queryIdNo", "140502198811102243");// 身份证
+		params.put("queyCardNo", "6202002294573115115");// 卡号
+		params.put("queryPhone", "13986671325");// 手机号
 
 		quleQueryVO.setParams(SecureUtil.des(desKey.getBytes()).encryptBase64(JSONUtil.toJsonStr(params)));
 
@@ -479,7 +528,7 @@ public class CreditQueryTest {
 				JSONObject data = jsonObject.getJSONObject("data");
 				String htmlRpt = SecureUtil.rsa(privateKeyBase64, publicKeyBase64).decryptStr(data.getStr("htmlRpt"),
 						KeyType.PrivateKey);
-				FileUtil.writeBytes(htmlRpt.getBytes(), "H://test//test.html");
+				FileUtil.writeBytes(htmlRpt.getBytes(), "D://test//test.html");
 			}
 		}
 		System.out.println(result);
