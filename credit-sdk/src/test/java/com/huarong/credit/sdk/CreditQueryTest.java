@@ -330,7 +330,7 @@ public class CreditQueryTest {
 		c9005.setMerchantId(merchantId);
 		c9005.setRiskQueryType("C9005");
 		c9005.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
-		c9005.setSerialNumber("2020090905333200000905");
+		c9005.setSerialNumber("2020102107170600000476");
 
 		Map<String, Object> map = BeanUtil.beanToMap(c9005);
 
@@ -389,7 +389,7 @@ public class CreditQueryTest {
 
 		quleQueryVO.setParams(SecureUtil.des(desKey.getBytes()).encryptBase64(JSONUtil.toJsonStr(params)));
 
-		quleQueryVO.setSerialNumber("2020101310100800000099");
+		quleQueryVO.setSerialNumber("2020102107415100000648");
 
 		Map<String, Object> map = BeanUtil.beanToMap(quleQueryVO);
 
@@ -440,7 +440,7 @@ public class CreditQueryTest {
 		quleQueryVO.setRules(SecureUtil.des(desKey.getBytes()).encryptBase64(
 				"R0001=58|R0002=38|R0003=3|R0004=6|R0005=4|R0006=8|R0007=1|R0008=2|R0009=2|R0010=6|R0011=1|R0012=4|R0013=4|R0014=3|R0015=2|R0016=1|R0017=20|R0018=3|R0019=20000|R0020=10000|R0021=5000"));
 
-		quleQueryVO.setSerialNumber("2020101310100800000099");
+		quleQueryVO.setSerialNumber("2020102107415100000648");
 
 		Map<String, Object> map = BeanUtil.beanToMap(quleQueryVO);
 
@@ -489,7 +489,7 @@ public class CreditQueryTest {
 		riskRptQueryVO.setRiskQueryType("R9004");
 		riskRptQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
 
-		riskRptQueryVO.setSerialNumber("2020090905333200000905");
+		riskRptQueryVO.setSerialNumber("2020102107452300000897");
 		// riskRptQueryVO.setCompany(SecureUtil.des(desKey.getBytes()).encryptBase64("北京银行"));
 		// riskRptQueryVO.setCompanyAddress(SecureUtil.des(desKey.getBytes()).encryptBase64("北京市西城区金融大街35号国际企业大厦A座305室"));
 		// riskRptQueryVO.setHomeAddress(SecureUtil.des(desKey.getBytes()).encryptBase64("北京市朝阳区春晓园北区7号楼C555室"));
@@ -550,7 +550,7 @@ public class CreditQueryTest {
 		securityComputingQueryVO.setRiskQueryType("R9005");
 		securityComputingQueryVO.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
 
-		securityComputingQueryVO.setSerialNumber("2020090905333200000905");
+		securityComputingQueryVO.setSerialNumber("2020102107170600000476");
 		securityComputingQueryVO.setParams(SecureUtil.des(desKey.getBytes()).encryptBase64("风控计算自定义参数"));
 
 		Map<String, Object> map = BeanUtil.beanToMap(securityComputingQueryVO);
