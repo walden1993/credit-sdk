@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.huarong.credit.sdk.vo.ResultVO;
-import com.huarong.credit.sdk.vo.query.rule.R9002;
+import com.huarong.credit.sdk.vo.query.credit.C9002;
 import com.huarong.credit.sdk.vo.query.v1.CreditScoreQueryVO;
 import com.huarong.credit.sdk.vo.query.v1.RiskRptQueryVO;
 import com.huarong.credit.sdk.vo.query.v1.RuleQueryVO;
@@ -155,7 +155,7 @@ public class TestNotifyController {
 	@ResponseBody
 	public String test(String ruleName, String ruleValue) {
 
-		R9002 r9002 = new R9002();
+		C9002 r9002 = new C9002();
 
 		r9002.setRequestNo(String.valueOf(System.currentTimeMillis()));
 		r9002.setMerchantId("10000001");
@@ -166,7 +166,6 @@ public class TestNotifyController {
 		r9002.setQueryDate(DateUtil.format(new Date(), "yyyyMMdd"));
 		r9002.setCertFile("111");
 		r9002.setOtherFile("2222");
-		r9002.setRules(ruleName + "=" + ruleValue);
 		r9002.setIncomeFile("3333");
 		r9002.setAuthoFile("4444");
 		r9002.setBackUrl("3233");

@@ -27,7 +27,7 @@ import net.coobird.thumbnailator.Thumbnails;
 public class ImageUtil {
 
 	public static void main(String[] args) throws Exception {
-		ImageUtil.scaleImages(FileUtil.file("D:\\certs\\test\\002.jpg"), FileUtil.file("D:\\certs\\test\\003.jpg"));
+		ImageUtil.scaleImages(FileUtil.file("F:\\certs\\test\\002.jpg"), FileUtil.file("F:\\certs\\test\\003.jpg"));
 	}
 
 	/**
@@ -51,7 +51,8 @@ public class ImageUtil {
 			if (size < 300 * 1024) {
 				Thumbnails.of(imageFile).size(1080, 1080).outputFormat("jpg").toFile(outFile);
 			} else {
-				Thumbnails.of(imageFile).size(1080, 1080).outputQuality(scale).outputFormat("jpg")
+				Thumbnails.of(imageFile).size(1080, 1080)
+						/* .outputQuality(scale) */.outputFormat("jpg")
 						.toFile(outFile);
 			}
 
